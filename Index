@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checklist Inteligente Tocología</title>
+  <title>Checklist Tocología ISSSTE</title>
   <!-- Tailwind CSS CDN (no build step needed for GitHub Pages) -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
