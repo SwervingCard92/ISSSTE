@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checklist Inteligente Tocología</title>
+  <!-- Tailwind CSS CDN (no build step needed for GitHub Pages) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <header class="bg-blue-800 text-white p-4 shadow">
+    <h1 class="text-2xl font-semibold text-center">Checklist Inteligente – Área de Tocología</h1>
+    <p class="text-center text-sm">Marque los ítems <strong>No conformes</strong>. El sistema clasifica automáticamente el tipo de mantenimiento.</p>
+  </header>
+
+  <main id="app" class="p-4 space-y-6"></main>
+
+  <script>
+    /* ------------------------- CONFIGURACIÓN ------------------------- */
+    const THRESHOLDS = {
+      CORRECTIVO_SCORE: 8,
+    };
+
+    /** Reglas de clasificación. */
+    function clasificar(puntaje, existeCritico) {
+      if (existeCritico || puntaje >= THRESHOLDS.CORRECTIVO_SCORE) return "Correctivo";
+      if (puntaje >= 3) return "Preventivo";
+      if (puntaje >= 1) return "Programado";
+      return "Viable";
+    }
+
+    /** Definición de equipos y sus ítems (W = peso). */
+    const EQUIPOS = [
+      {
+        nombre: "Mesa quirúrgica",
+        codigo: "MESA",
+        items: [
+          ["Armazón, columna y tablero sin fisuras ni corrosión", 5],
+          ["Movimientos (altura, Trendelenburg, lateral, secciones) suaves y paro inmediato", 5],
+          ["Frenos de piso bloquean completamente; ruedas giran libres", 3],
+          ["Colchón íntegro, impermeable, sin rasgaduras", 1],
+          ["Accesorios (barandales, estribos) firmes", 3],
+          ["Cable de poder íntegro y con tierra hospitalaria", 5],
+        ],
+      },
+      {
+        nombre: "Lámparas de cirugía",
+        codigo: "LAMP",
+        items: [
+          ["Brazos y soporte firmes; cúpula no se descuelga", 5],
+          ["Todos los módulos LED/halógenos encienden; respaldo funciona", 5],
+          ["Regulador de intensidad sin parpadeos", 3],
+          ["Frenos/articulaciones sostienen posición", 4],
+          ["Mango estéril acopla seguro", 3],
+          ["Pantalla/difusor limpio, sin fisuras", 1],
+        ],
+      },
+      {
+        nombre: "Aspirador de succión",
+        codigo: "ASP",
+        items: [
+          ["Vacío máximo ≥ -550 mmHg y estable", 5],
+          ["Regulador y manómetro funcionales", 3],
+          ["Frasco recolector íntegro; tapa y sello herméticos", 4],
+          ["Filtro bacteriano seco y vigente", 3],
+          ["Mangueras sin grietas ni obstrucciones", 3],
+          ["Motor sin ruidos anómalos ni sobrecalentamiento", 3],
+          ["Batería (si aplica) mantiene ≥ 30 min", 4],
+        ],
+      },
+      {
+        nombre: "Carro‑camilla",
+        codigo: "CAM",
+        items: [
+          ["Ruedas giran libres; sin vibración", 4],
+          ["Frenos bloquean las cuatro ruedas", 5],
+          ["Barandales suben/bajan y traban firmes", 5],
+          ["Ajustes altura/respaldo operan suave", 3],
+          ["Colchón limpio, sin desgarres", 1],
+          ["Porta‑OX sujeta cilindro con correa", 4],
+        ],
+      },
+      {
+        nombre: "Negatoscopio",
+        codigo: "NEG",
+        items: [
+          ["Iluminación homogénea; sin zonas muertas", 4],
+          ["Interruptor fiable; piloto enciende", 2],
+          ["Pantalla translúcida limpia", 2],
+          ["Sujeción de placas firme", 1],
+          ["Cable de alimentación con tierra", 3],
+        ],
+      },
+      {
+        nombre: "Máquina de anestesia",
+        codigo: "ANES",
+        items: [
+          ["Presión de O₂ canalizado 50 psi y cilindro respaldo ≥ 1500 psi", 5],
+          ["Alarma de fallo de O₂ activa correctamente", 5],
+          ["Prueba de fugas del circuito ≤ 300 mL/10 s", 5],
+          ["Ventilador entrega volumen y alarmas operativas", 5],
+          ["Vaporizadores llenos y con interlock activo", 4],
+          ["Absorbedor CO₂ con cal sodada fresca", 4],
+          ["Scavenger operativo", 3],
+          ["Batería/alimentación funcional", 4],
+        ],
+      },
+      {
+        nombre: "Monitor multiparámetro",
+        codigo: "MON",
+        items: [
+          ["ECG señal clara; alarmas FC", 5],
+          ["PNI infla/defla correctamente", 4],
+          ["SpO₂ estable; alarmas sensor/baja", 5],
+          ["Batería interna ≥ 30 min", 4],
+          ["Pantalla legible; controles OK", 2],
+          ["Cables/sensores íntegros", 3],
+        ],
+      },
+      {
+        nombre: "Esfigmomanómetro manual y estetoscopio",
+        codigo: "ESF",
+        items: [
+          ["Aguja en cero; calibración válida", 5],
+          ["Brazalete y vejiga sin fugas", 5],
+          ["Tubos flexibles, sin grietas", 3],
+          ["Estetoscopio íntegro; acústica clara", 5],
+          ["Elementos limpios y desinfectados", 1],
+        ],
+      },
+      {
+        nombre: "Desfibrilador bifásico",
+        codigo: "DESF",
+        items: [
+          ["Autotest diario superado", 5],
+          ["Batería ≥ 80 % y mantiene encendido", 5],
+          ["Palas/parches en fecha y cables OK", 4],
+          ["Carga 30 J < 5 s y descarga exitosa", 5],
+          ["Modo sincronizado con marcas QRS", 3],
+          ["Impresora con papel", 1],
+        ],
+      },
+      {
+        nombre: "Ultrasonido Doppler portátil",
+        codigo: "DOP",
+        items: [
+          ["Encendido y batería en rango", 5],
+          ["Transductor y cable íntegros", 5],
+          ["Señal Doppler audible estable", 5],
+          ["Altavoz/volumen operativos", 3],
+          ["Sonda limpia; gel disponible", 1],
+        ],
+      },
+      {
+        nombre: "Cuna térmica",
+        codigo: "CUNA",
+        items: [
+          ["Calentador radiante alcanza potencia", 5],
+          ["Modo servo controla temp ±0.2 °C", 5],
+          ["Alarmas de sobretemp y sonda", 5],
+          ["Sensor de piel y cable íntegros", 4],
+          ["Colchón limpio", 2],
+          ["Cable de poder/tierra OK", 3],
+        ],
+      },
+      {
+        nombre: "Torre de suministro de gases/elétrica",
+        codigo: "TOR",
+        items: [
+          ["Toma O₂ 50 psi y demás gases en rango", 5],
+          ["Vacío ≥ -550 mmHg", 5],
+          ["Tomas eléctricas hospitalarias con tierra", 5],
+          ["Acoples sin fugas", 4],
+          ["Brazos/frenos sostienen posición", 3],
+          ["Superficie limpia y señalizada", 1],
+        ],
+      },
+      {
+        nombre: "Pulsioxímetro portátil",
+        codigo: "PUL",
+        items: [
+          ["Encendido; batería ≥ 50 %", 5],
+          ["Sensor sin daño; cable íntegro", 5],
+          ["Lectura SpO₂ estable ≥ 95 %", 5],
+          ["Alarmas baja SpO₂ y sensor suelto", 4],
+          ["Pantalla clara; botones OK", 2],
+        ],
+      },
+      {
+        nombre: "Incubadora neonatal",
+        codigo: "INCU",
+        items: [
+          ["Control temp aire ±0.3 °C", 5],
+          ["Alarmas alta/baja temp operativas", 5],
+          ["Humidificador y nivel agua correctos", 4],
+          ["Ventiladores internos silenciosos", 3],
+          ["Puertas y cúpula sin grietas", 3],
+          ["Filtros aire limpios", 1],
+        ],
+      },
+      {
+        nombre: "Balanza para recién nacido",
+        codigo: "BAL",
+        items: [
+          ["Calibración ±10 g con peso patrón", 5],
+          ["Superficie de pesaje limpia", 2],
+          ["Cero electrónico correcto", 3],
+          ["Pantalla legible; botones OK", 2],
+          ["Alimentación/batería OK", 3],
+        ],
+      },
+      {
+        nombre: "Tablero de aislamiento eléctrico (LIM)",
+        codigo: "LIM",
+        items: [
+          ["Test del LIM activa alarma", 5],
+          ["Fuga en reposo < 2 mA", 4],
+          ["Indicadores alimentación correctos", 3],
+          ["Gabinete sin sobrecalentamiento", 2],
+        ],
+      },
+    ];
+
+    /* ------------------------- CONSTRUCCIÓN UI ------------------------- */
+    const app = document.getElementById("app");
+
+    EQUIPOS.forEach((eq) => {
+      // Crear contenedor
+      const section = document.createElement("section");
+      section.className = "bg-white p-4 rounded-xl shadow";
+
+      // Título del equipo
+      const title = document.createElement("h2");
+      title.className = "text-xl font-bold mb-2 text-blue-800";
+      title.textContent = eq.nombre;
+      section.appendChild(title);
+
+      // Lista de ítems
+      const ul = document.createElement("ul");
+      ul.className = "space-y-1";
+      eq.items.forEach(([desc, weight], idx) => {
+        const li = document.createElement("li");
+        li.className = "flex items-start gap-2";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "mt-1 h-4 w-4 text-red-600 border-gray-300 rounded";
+        checkbox.dataset.weight = weight;
+        checkbox.id = `${eq.codigo}-${idx}`;
+
+        const label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.className = "flex-1 text-sm";
+        label.innerHTML = `${desc} <span class=\"text-xs text-gray-400\">(W:${weight})</span>`;
+
+        li.appendChild(checkbox);
+        li.appendChild(label);
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+
+      // Resultado
+      const result = document.createElement("p");
+      result.className = "mt-3 font-semibold";
+      result.textContent = "Clasificación: Viable (0)";
+      section.appendChild(result);
+
+      // Evento para recalcular
+      section.addEventListener("change", () => {
+        let puntaje = 0;
+        let critico = false;
+        ul.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+          if (cb.checked) {
+            const w = parseInt(cb.dataset.weight);
+            puntaje += w;
+            if (w === 5) critico = true;
+          }
+        });
+        const categoria = clasificar(puntaje, critico);
+        const color = {
+          Correctivo: "text-red-600",
+          Preventivo: "text-orange-500",
+          Programado: "text-yellow-600",
+          Viable: "text-green-600",
+        }[categoria];
+        result.innerHTML = `Clasificación: <span class=\"${color}\">${categoria}</span> (${puntaje})`;
+      });
+
+      app.appendChild(section);
+    });
+  </script>
+</body>
+</html>
