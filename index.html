@@ -6,11 +6,27 @@
   <title>Checklist Inteligente Tocología</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      background-color: #F2F2F2;
+    }
+    header {
+      background-color: #8A1538;
+    }
+    .btn-issste {
+      background-color: #3A913F;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <header class="bg-blue-800 text-white p-4 shadow sticky top-0 z-10">
-    <h1 class="text-2xl font-semibold text-center">Checklist Inteligente – Área de Tocología</h1>
-    <p class="text-center text-sm">Marque los ítems <strong>No conformes</strong>. El sistema clasifica automáticamente el tipo de mantenimiento.</p>
+<body class="text-gray-900">
+  <header class="text-white p-4 shadow sticky top-0 z-10 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <img src="/mnt/data/c67df54b-5966-45e5-89b2-3447e2f2bc3f.jpg" alt="Logo ISSSTE" class="h-16" />
+      <div>
+        <h1 class="text-2xl font-semibold">Checklist Inteligente – Área de Tocología</h1>
+        <p class="text-sm">Marque los ítems <strong>No conformes</strong>. El sistema clasifica automáticamente el tipo de mantenimiento.</p>
+      </div>
+    </div>
   </header>
 
   <nav class="p-4 bg-white shadow sticky top-16 z-10">
@@ -23,10 +39,11 @@
   <div class="p-4 text-center space-y-2">
     <input type="text" id="responsable" placeholder="Nombre del responsable" class="p-2 border rounded w-64" />
     <br>
-    <button id="btnGenerarPDF" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">Generar y descargar PDF con resultados</button>
+    <button id="btnGenerarPDF" class="btn-issste text-white px-4 py-2 rounded shadow hover:brightness-110">Generar y descargar PDF con resultados</button>
     <br>
     <a href="checklist_tocologia.pdf" download class="text-sm text-blue-800 underline">Descargar versión para impresión (formato vacío)</a>
   </div>
+
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
