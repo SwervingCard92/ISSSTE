@@ -29,7 +29,7 @@
     </div>
   </header>
 
-  <nav class="p-4 bg-white shadow sticky top-16 z-10">
+<nav class="p-4 bg-white shadow sticky top-16 z-10">
     <h2 class="text-lg font-bold mb-2">Índice de Equipos</h2>
     <ul id="indice" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm text-blue-700 list-disc list-inside"></ul>
   </nav>
@@ -39,10 +39,13 @@
   <div class="p-4 text-center space-y-2">
     <input type="text" id="responsable" placeholder="Nombre del responsable" class="p-2 border rounded w-64" />
     <br>
+    <textarea id="observaciones" rows="4" class="p-2 border rounded w-80" placeholder="Observaciones generales..."></textarea>
+    <br>
     <button id="btnGenerarPDF" class="btn-issste text-white px-4 py-2 rounded shadow hover:brightness-110">Generar y descargar PDF con resultados</button>
     <br>
     <a href="checklist_tocologia.pdf" download class="text-sm text-blue-800 underline">Descargar versión para impresión (formato vacío)</a>
   </div>
+
  <footer class="text-center text-xs text-gray-600 mt-10 pb-4">
     ISSSTE - Hospital Regional Dr. Valentín Gómez Farías – Departamento de Ingeniería Biomédica
   </footer>
