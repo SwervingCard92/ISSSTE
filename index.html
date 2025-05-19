@@ -4,21 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checklist Inteligente Tocología</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jsPDF + plugin AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
   <style>
+    :root {
+      --issste-blue: #005EA2;
+      --issste-light-blue: #C6E2F2;
+      --issste-green: #3A913F;
+      --issste-alert-red: #D7263D;
+    }
     body {
       background-color: #F2F2F2;
     }
     header {
-      background-color: #8A1538;
+      background-color: var(--issste-blue);
+    }
+    nav {
+      background-color: var(--issste-light-blue);
     }
     .btn-issste {
-      background-color: #3A913F;
+      background-color: var(--issste-green);
+    }
+    .text-alert {
+      color: var(--issste-alert-red);
     }
   </style>
 </head>
 <body class="text-gray-900">
+
+  <!-- HEADER -->
   <header class="text-white p-4 shadow sticky top-0 z-10 flex items-center justify-between">
     <div class="flex items-center gap-4">
       <img src="Logo.jpg" alt="Logo ISSSTE" class="h-16" />
@@ -29,25 +48,35 @@
     </div>
   </header>
 
-  <nav class="p-4 bg-white shadow sticky top-16 z-10">
+  <!-- ÍNDICE -->
+  <nav class="p-4 shadow sticky top-16 z-10">
     <h2 class="text-lg font-bold mb-2">Índice de Equipos</h2>
-    <ul id="indice" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm text-blue-700 list-disc list-inside"></ul>
+    <ul id="indice" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm text-blue-800 list-disc list-inside"></ul>
   </nav>
 
+  <!-- CONTENIDO -->
   <main id="app" class="p-4 space-y-6"></main>
 
-  <div class="p-4 text-center space-y-2">
+  <!-- RESPONSABLE + BOTÓN PDF + DESCARGA -->
+  <div class="p-4 text-center space-y-2 bg-white shadow">
     <input type="text" id="responsable" placeholder="Nombre del responsable" class="p-2 border rounded w-64" />
     <br>
-    <button id="btnGenerarPDF" class="btn-issste text-white px-4 py-2 rounded shadow hover:brightness-110">Generar y descargar PDF con resultados</button>
+    <button id="btnGenerarPDF" class="btn-issste text-white px-4 py-2 rounded shadow hover:brightness-110">
+      Generar y descargar PDF con resultados
+    </button>
     <br>
-    <a href="checklist_tocologia.pdf" download class="text-sm text-blue-800 underline">Descargar versión para impresión (formato vacío)</a>
+    <a href="checklist_tocologia.pdf" download class="text-sm text-blue-800 underline">
+      Descargar versión para impresión (formato vacío)
+    </a>
   </div>
- <footer class="text-center text-xs text-gray-600 mt-10 pb-4">
+
+  <!-- FOOTER -->
+  <footer class="text-center text-xs text-gray-600 mt-10 pb-4">
     ISSSTE - Hospital Regional Dr. Valentín Gómez Farías – Departamento de Ingeniería Biomédica
   </footer>
 
-   <script>
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const THRESHOLDS = { CORRECTIVO_SCORE: 5 };
       function clasificar(puntaje, existeCritico) {
@@ -76,12 +105,13 @@
         ["P  Tablero de aislamiento (LIM)", [["* Test LIM → alarma",5],["Fuga en reposo < 2 mA",1]]],
       ];
 
-      const app = document.getElementById("app");
+      const app    = document.getElementById("app");
       const indice = document.getElementById("indice");
 
+      // Construcción dinámica del checklist
       EQUIPOS.forEach(([nombre, items], i) => {
         const codigo = `EQ${i}`;
-
+        // ÍNDICE
         const li = document.createElement("li");
         const link = document.createElement("a");
         link.href = `#${codigo}`;
@@ -90,22 +120,23 @@
         li.appendChild(link);
         indice.appendChild(li);
 
+        // SECCIÓN
         const section = document.createElement("section");
         section.className = "bg-white p-4 rounded-xl shadow scroll-mt-20";
         section.id = codigo;
 
+        // TÍTULO
         const title = document.createElement("h2");
-        title.className = "text-xl font-bold mb-2 text-blue-800";
+        title.className = "text-xl font-bold mb-2 text-issste-blue";
         title.textContent = nombre;
         section.appendChild(title);
 
+        // LISTA DE ÍTEMS
         const ul = document.createElement("ul");
         ul.className = "space-y-1";
-
         items.forEach(([desc, weight], idx) => {
           const li = document.createElement("li");
           li.className = "flex items-start gap-2";
-
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.className = "mt-1 h-4 w-4 text-red-600 border-gray-300 rounded";
@@ -116,74 +147,81 @@
           const label = document.createElement("label");
           label.htmlFor = checkbox.id;
           label.className = "flex-1 text-sm";
-          label.innerHTML = `${desc} <span class=\"text-xs text-gray-400\">(W:${weight})</span>`;
+          label.innerHTML = `${desc} <span class="text-xs text-gray-400">(W:${weight})</span>`;
 
           li.appendChild(checkbox);
           li.appendChild(label);
           ul.appendChild(li);
         });
-
         section.appendChild(ul);
 
+        // RESULTADO
         const result = document.createElement("p");
         result.className = "mt-3 font-semibold";
         result.textContent = "Clasificación: SIN URGENCIA (0)";
         result.dataset.codigo = codigo;
         section.appendChild(result);
 
+        // Escucha cambios de checkboxes
         section.addEventListener("change", () => {
-          let puntaje = 0;
-          let critico = false;
-          ul.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+          let puntaje = 0, critico = false;
+          ul.querySelectorAll("input[type=checkbox]").forEach(cb => {
             if (cb.checked) {
-              const w = parseInt(cb.dataset.weight);
+              const w = +cb.dataset.weight;
               puntaje += w;
               if (w === 5) critico = true;
             }
           });
           const categoria = clasificar(puntaje, critico);
-          const color = {
-            INMEDIATA: "text-red-600",
-            PRONTA: "text-orange-500",
-            PROGRAMADA: "text-yellow-600",
-            SIN_URGENCIA: "text-green-600",
-          }[categoria.replace(" ", "_")];
-          result.innerHTML = `Clasificación: <span class=\"${color}\">${categoria}</span> (${puntaje})`;
-          result.dataset.puntaje = puntaje;
+          const colorClass = {
+            INMEDIATA: "text-alert",
+            PRONTA:   "text-orange-500",
+            PROGRAMADA:"text-yellow-600",
+            SIN_URGENCIA:"text-green-600"
+          }[categoria.replace(" ", "_")] || "text-green-600";
+          result.innerHTML = `Clasificación: <span class="${colorClass}">${categoria}</span> (${puntaje})`;
+          result.dataset.puntaje   = puntaje;
           result.dataset.categoria = categoria;
         });
 
         app.appendChild(section);
       });
 
-      document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
+      // GENERAR PDF CON TABLA
+      document.getElementById("btnGenerarPDF").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const nombre = document.getElementById("responsable").value || "Sin nombre";
-        let y = 10;
-        doc.setFontSize(12);
-        doc.text(`Checklist Tocología – Responsable: ${nombre}`, 10, y);
-        y += 10;
+        const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+        const nombre = document.getElementById("responsable").value.trim() || "Sin nombre";
 
-        document.querySelectorAll("main > section").forEach((section) => {
-          const equipo = section.querySelector("h2").textContent;
-          const resultado = section.querySelector("p");
-          const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
-          const score = resultado?.dataset?.puntaje || 0;
-          doc.setFontSize(10);
-          doc.text(`${equipo}: ${clasif} (${score})`, 10, y);
-          y += 7;
-          section.querySelectorAll("input[type=checkbox]").forEach((cb) => {
-            if (cb.checked) {
-              doc.setFontSize(8);
-              doc.text(`   ✗ ${cb.dataset.label}`, 12, y);
-              y += 5;
-            }
-          });
-          y += 3;
-          if (y > 270) {
-            doc.addPage();
-            y = 10;
+        // Encabezado
+        doc.setFontSize(14);
+        doc.text(`Checklist Tocología – Responsable: ${nombre}`, 40, 40);
+
+        // Preparar filas
+        const rows = [];
+        document.querySelectorAll("main > section").forEach(sec => {
+          const equipo    = sec.querySelector("h2").textContent;
+          const categoria = sec.querySelector("p").dataset.categoria || "SIN URGENCIA";
+          const score     = sec.querySelector("p").dataset.puntaje   || "0";
+          const items     = Array.from(sec.querySelectorAll("input[type=checkbox]:checked"))
+                                .map(cb => cb.dataset.label)
+                                .join("; ");
+          rows.push([equipo, categoria, score, items]);
+        });
+
+        // AutoTable
+        doc.autoTable({
+          startY: 60,
+          head: [['Equipo', 'Clasificación', 'Puntaje', 'Ítems No conformes']],
+          body: rows,
+          margin: { left: 40, right: 40 },
+          styles:    { fontSize: 8 },
+          headStyles:{ fillColor: [0,94,162], textColor: [255,255,255] },
+          columnStyles: {
+            0: { cellWidth: 150 },
+            1: { cellWidth: 80 },
+            2: { cellWidth: 50 },
+            3: { cellWidth: 240 }
           }
         });
 
