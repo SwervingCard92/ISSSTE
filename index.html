@@ -47,7 +47,7 @@
     ISSSTE - Hospital Regional Dr. Valentín Gómez Farías – Departamento de Ingeniería Biomédica
   </footer>
 
-  <script>
+   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const THRESHOLDS = { CORRECTIVO_SCORE: 5 };
       function clasificar(puntaje, existeCritico) {
@@ -156,71 +156,38 @@
         app.appendChild(section);
       });
 
-     document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const nombre = document.getElementById("responsable").value || "Sin nombre";
-    const observaciones = document.getElementById("observaciones").value || "Sin observaciones";
-    let y = 10;
+      document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const nombre = document.getElementById("responsable").value || "Sin nombre";
+        let y = 10;
+        doc.setFontSize(12);
+        doc.text(`Checklist Tocología – Responsable: ${nombre}`, 10, y);
+        y += 10;
 
-    doc.setFontSize(14);
-    doc.text("INSTITUTO DE SEGURIDAD Y SERVICIOS SOCIALES DE LOS TRABAJADORES DEL ESTADO", 10, y, { maxWidth: 190 });
-    y += 10;
-    doc.setFontSize(12);
-    doc.text(`Checklist Tocología – Responsable: ${nombre}`, 10, y);
-    y += 8;
-    doc.setFontSize(10);
-    const date = new Date().toLocaleString("es-MX");
-    doc.text(`Fecha de generación: ${date}`, 10, y);
-    y += 8;
-
-    doc.setFontSize(10);
-    doc.text("Observaciones generales:", 10, y);
-    y += 5;
-    doc.setFontSize(9);
-    const obsLines = doc.splitTextToSize(observaciones, 180);
-    doc.text(obsLines, 10, y);
-    y += obsLines.length * 5 + 5;
-
-    document.querySelectorAll("main > section").forEach((section) => {
-      const equipo = section.querySelector("h2").textContent;
-      const resultado = section.querySelector("p");
-      const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
-      const score = resultado?.dataset?.puntaje || 0;
-
-      const fallos = Array.from(section.querySelectorAll("input[type=checkbox]"))
-        .filter(cb => cb.checked)
-        .map(cb => [cb.dataset.label, cb.dataset.weight]);
-
-      if (fallos.length > 0) {
-        doc.setFontSize(10);
-        doc.text(`${equipo}`, 10, y);
-        y += 6;
-        doc.text(`Clasificación: ${clasif}`, 12, y);
-        doc.text(`Puntaje: ${score}`, 100, y);
-        y += 4;
-
-        doc.autoTable({
-          head: [["Ítem No Conforme", "Peso"]],
-          body: fallos,
-          startY: y,
-          theme: 'grid',
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [138, 21, 56], halign: 'center' },
-          bodyStyles: { valign: 'top' },
-          margin: { left: 10, right: 10 }
+        document.querySelectorAll("main > section").forEach((section) => {
+          const equipo = section.querySelector("h2").textContent;
+          const resultado = section.querySelector("p");
+          const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
+          const score = resultado?.dataset?.puntaje || 0;
+          doc.setFontSize(10);
+          doc.text(`${equipo}: ${clasif} (${score})`, 10, y);
+          y += 7;
+          section.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+            if (cb.checked) {
+              doc.setFontSize(8);
+              doc.text(`   ✗ ${cb.dataset.label}`, 12, y);
+              y += 5;
+            }
+          });
+          y += 3;
+          if (y > 270) {
+            doc.addPage();
+            y = 10;
+          }
         });
 
-        y = doc.lastAutoTable.finalY + 10;
-        if (y > 250) {
-          doc.addPage();
-          y = 10;
-        }
-      }
-    });
-
-    doc.save("resultado_checklist_tocologia.pdf");
-  });
+        doc.save("resultado_checklist_tocologia.pdf");
       });
     });
   </script>
