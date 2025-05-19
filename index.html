@@ -47,54 +47,148 @@
     ISSSTE - Hospital Regional Dr. Valentín Gómez Farías – Departamento de Ingeniería Biomédica
   </footer>
 
-   <script>
-    document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const nombre = document.getElementById("responsable").value || "Sin nombre";
-      const observaciones = document.getElementById("observaciones").value || "Sin observaciones";
-      let y = 10;
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const THRESHOLDS = { CORRECTIVO_SCORE: 5 };
+      function clasificar(puntaje, existeCritico) {
+        if (existeCritico || puntaje >= THRESHOLDS.CORRECTIVO_SCORE) return "INMEDIATA";
+        if (puntaje >= 3) return "PRONTA";
+        if (puntaje >= 1) return "PROGRAMADA";
+        return "SIN URGENCIA";
+      }
 
-      doc.setFontSize(12);
-      doc.text(`Checklist Tocología – Responsable: ${nombre}`, 10, y);
-      y += 10;
-      doc.setFontSize(10);
-      doc.text(`Observaciones generales:`, 10, y);
-      y += 6;
-      doc.setFontSize(9);
-      doc.text(doc.splitTextToSize(observaciones, 180), 10, y);
-      y += 10 + (Math.ceil(observaciones.length / 90) * 5);
+      const EQUIPOS = [
+        ["A  Máquina de anestesia + ventilador", [["* Fuente O₂ (50 psi) y cilindro de respaldo",5],["* Prueba de fugas <= 300 mL/10 s",5],["* Ventilador cicla y alarmas presión/apnea",5],["Vaporizador con agente >= 1/4 tanque",1],["Absorbedor CO₂ fresco",1]]],
+        ["B  Desfibrilador bifásico", [["* Autotest diario OK (luz verde)",5],["* Carga 30 J < 5 s y descarga",5],["Batería >= 80 %",1],["Palas/parches en fecha",1]]],
+        ["C  Monitor multiparámetro", [["* ECG y SpO₂ funcionales; alarmas suenan",5],["Batería >= 30 min",1],["PNI infla/defla sin fugas",1]]],
+        ["D  Cuna térmica", [["* Modo servo mantiene 36-37 °C ± 0.2",5],["* Alarmas de sobretemperatura y sonda activas",5],["Sensor de piel íntegro",1]]],
+        ["E  Incubadora neonatal", [["* Control temperatura de aire ± 0.3 °C",5],["* Alarmas alta/baja temperatura",5],["Humidificador operativo",1]]],
+        ["F  Aspirador de succión", [["* Vacío >= -550 mmHg estable",5],["Frasco y tapa herméticos",1],["Filtro bacteriano seco",1]]],
+        ["G  Mesa quirúrgica", [["* Movimientos y frenos 100 % operativos",5],["Cable/tierra seguros",1],["Colchón sin rasgaduras",1]]],
+        ["H  Lámparas de cirugía", [["* Todas las fuentes de luz activas",5],["Brazos sostienen posición",1],["Mango estéril firme",1]]],
+        ["I  Torre de gases/eléctrica", [["* Salida O₂ 50 psi y vacío -550 mmHg",5],["* Tomas eléctricas con puesta a tierra",5],["Acoples sin fuga audible",1]]],
+        ["J  Pulsioxímetro portátil", [["* Lectura SpO₂ estable >= 95 %",5],["Batería >= 50 %",1]]],
+        ["K  Ultrasonido Doppler fetal", [["* Señal audible clara en prueba",5],["Batería/pilas en buen nivel",1]]],
+        ["L  Esfigmomanómetro + estetoscopio", [["* Manómetro en cero; sin fugas",5],["Estetoscopio acústica nítida",1]]],
+        ["M  Carro-camilla", [["* Barandales y frenos firmes",5],["Ruedas libres de obstrucción",1]]],
+        ["N  Negatoscopio", [["Iluminación continua homogénea",1],["Interruptor funcional",1]]],
+        ["O  Balanza para recién nacido", [["Calibración ± 10 g con peso patrón",1]]],
+        ["P  Tablero de aislamiento (LIM)", [["* Test LIM → alarma",5],["Fuga en reposo < 2 mA",1]]],
+      ];
 
-      document.querySelectorAll("main > section").forEach((section) => {
-        const equipo = section.querySelector("h2").textContent;
-        const resultado = section.querySelector("p");
-        const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
-        const score = resultado?.dataset?.puntaje || 0;
+      const app = document.getElementById("app");
+      const indice = document.getElementById("indice");
 
-        doc.setFontSize(10);
-        doc.text(`${equipo}`, 10, y);
-        y += 6;
-        doc.text(`Clasificación: ${clasif}`, 12, y);
-        doc.text(`Puntaje: ${score}`, 80, y);
-        y += 6;
+      EQUIPOS.forEach(([nombre, items], i) => {
+        const codigo = `EQ${i}`;
 
-        doc.autoTable({
-          head: [["Ítem No Conforme", "Peso"]],
-          body: Array.from(section.querySelectorAll("input[type=checkbox]")).filter(cb => cb.checked).map(cb => [cb.dataset.label, cb.dataset.weight]),
-          startY: y,
-          theme: 'grid',
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [138, 21, 56] }
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `#${codigo}`;
+        link.className = "hover:underline";
+        link.textContent = nombre;
+        li.appendChild(link);
+        indice.appendChild(li);
+
+        const section = document.createElement("section");
+        section.className = "bg-white p-4 rounded-xl shadow scroll-mt-20";
+        section.id = codigo;
+
+        const title = document.createElement("h2");
+        title.className = "text-xl font-bold mb-2 text-blue-800";
+        title.textContent = nombre;
+        section.appendChild(title);
+
+        const ul = document.createElement("ul");
+        ul.className = "space-y-1";
+
+        items.forEach(([desc, weight], idx) => {
+          const li = document.createElement("li");
+          li.className = "flex items-start gap-2";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "mt-1 h-4 w-4 text-red-600 border-gray-300 rounded";
+          checkbox.dataset.weight = weight;
+          checkbox.dataset.label = desc;
+          checkbox.id = `${codigo}-${idx}`;
+
+          const label = document.createElement("label");
+          label.htmlFor = checkbox.id;
+          label.className = "flex-1 text-sm";
+          label.innerHTML = `${desc} <span class=\"text-xs text-gray-400\">(W:${weight})</span>`;
+
+          li.appendChild(checkbox);
+          li.appendChild(label);
+          ul.appendChild(li);
         });
 
-        y = doc.lastAutoTable.finalY + 10;
-        if (y > 250) {
-          doc.addPage();
-          y = 10;
-        }
+        section.appendChild(ul);
+
+        const result = document.createElement("p");
+        result.className = "mt-3 font-semibold";
+        result.textContent = "Clasificación: SIN URGENCIA (0)";
+        result.dataset.codigo = codigo;
+        section.appendChild(result);
+
+        section.addEventListener("change", () => {
+          let puntaje = 0;
+          let critico = false;
+          ul.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+            if (cb.checked) {
+              const w = parseInt(cb.dataset.weight);
+              puntaje += w;
+              if (w === 5) critico = true;
+            }
+          });
+          const categoria = clasificar(puntaje, critico);
+          const color = {
+            INMEDIATA: "text-red-600",
+            PRONTA: "text-orange-500",
+            PROGRAMADA: "text-yellow-600",
+            SIN_URGENCIA: "text-green-600",
+          }[categoria.replace(" ", "_")];
+          result.innerHTML = `Clasificación: <span class=\"${color}\">${categoria}</span> (${puntaje})`;
+          result.dataset.puntaje = puntaje;
+          result.dataset.categoria = categoria;
+        });
+
+        app.appendChild(section);
       });
 
-      doc.save("resultado_checklist_tocologia.pdf");
+      document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const nombre = document.getElementById("responsable").value || "Sin nombre";
+        let y = 10;
+        doc.setFontSize(12);
+        doc.text(`Checklist Tocología – Responsable: ${nombre}`, 10, y);
+        y += 10;
+
+        document.querySelectorAll("main > section").forEach((section) => {
+          const equipo = section.querySelector("h2").textContent;
+          const resultado = section.querySelector("p");
+          const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
+          const score = resultado?.dataset?.puntaje || 0;
+          doc.setFontSize(10);
+          doc.text(`${equipo}: ${clasif} (${score})`, 10, y);
+          y += 7;
+          section.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+            if (cb.checked) {
+              doc.setFontSize(8);
+              doc.text(`   ✗ ${cb.dataset.label}`, 12, y);
+              y += 5;
+            }
+          });
+          y += 3;
+          if (y > 270) {
+            doc.addPage();
+            y = 10;
+          }
+        });
+
+        doc.save("resultado_checklist_tocologia.pdf");
+      });
     });
   </script>
 </body>
