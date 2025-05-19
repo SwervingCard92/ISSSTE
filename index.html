@@ -80,11 +80,11 @@
       const indice = document.getElementById("indice");
 
       EQUIPOS.forEach(([nombre, items], i) => {
-        const codigo = EQ${i};
+        const codigo = `EQ${i}`;
 
         const li = document.createElement("li");
         const link = document.createElement("a");
-        link.href = #${codigo};
+        link.href = `#${codigo}`;
         link.className = "hover:underline";
         link.textContent = nombre;
         li.appendChild(link);
@@ -111,12 +111,12 @@
           checkbox.className = "mt-1 h-4 w-4 text-red-600 border-gray-300 rounded";
           checkbox.dataset.weight = weight;
           checkbox.dataset.label = desc;
-          checkbox.id = ${codigo}-${idx};
+          checkbox.id = `${codigo}-${idx}`;
 
           const label = document.createElement("label");
           label.htmlFor = checkbox.id;
           label.className = "flex-1 text-sm";
-          label.innerHTML = ${desc} <span class=\"text-xs text-gray-400\">(W:${weight})</span>;
+          label.innerHTML = `${desc} <span class=\"text-xs text-gray-400\">(W:${weight})</span>`;
 
           li.appendChild(checkbox);
           li.appendChild(label);
@@ -148,46 +148,12 @@
             PROGRAMADA: "text-yellow-600",
             SIN_URGENCIA: "text-green-600",
           }[categoria.replace(" ", "_")];
-          result.innerHTML = Clasificación: <span class=\"${color}\">${categoria}</span> (${puntaje});
+          result.innerHTML = `Clasificación: <span class=\"${color}\">${categoria}</span> (${puntaje})`;
           result.dataset.puntaje = puntaje;
           result.dataset.categoria = categoria;
         });
 
         app.appendChild(section);
-      });
-
-      document.getElementById("btnGenerarPDF").addEventListener("click", async () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const nombre = document.getElementById("responsable").value || "Sin nombre";
-        let y = 10;
-        doc.setFontSize(12);
-        doc.text(Checklist Tocología – Responsable: ${nombre}, 10, y);
-        y += 10;
-
-        document.querySelectorAll("main > section").forEach((section) => {
-          const equipo = section.querySelector("h2").textContent;
-          const resultado = section.querySelector("p");
-          const clasif = resultado?.dataset?.categoria || "SIN URGENCIA";
-          const score = resultado?.dataset?.puntaje || 0;
-          doc.setFontSize(10);
-          doc.text(${equipo}: ${clasif} (${score}), 10, y);
-          y += 7;
-          section.querySelectorAll("input[type=checkbox]").forEach((cb) => {
-            if (cb.checked) {
-              doc.setFontSize(8);
-              doc.text(   ✗ ${cb.dataset.label}, 12, y);
-              y += 5;
-            }
-          });
-          y += 3;
-          if (y > 270) {
-            doc.addPage();
-            y = 10;
-          }
-        });
-
-        doc.save("resultado_checklist_tocologia.pdf");
       });
     });
   </script>
