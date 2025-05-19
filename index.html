@@ -144,9 +144,9 @@
           let shade = false;
           return (data) => {
             if (data.section === 'body') {
-              if (data.column.index === 0) { // primera columna (Equipo)
+              if (data.column.index === 0) { // primera columna
                 if (data.cell.raw !== lastEquip) {
-                  shade = !shade; // cambia cada que cambia el nombre de equipo
+                  shade = !shade;
                   lastEquip = data.cell.raw;
                 }
               }
@@ -157,7 +157,8 @@
               }
             }
           };
-        })();
+        })()
+      });
 
       doc.save('resultado_checklist_tocologia.pdf');
     };
