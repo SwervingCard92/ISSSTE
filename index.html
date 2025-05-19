@@ -19,9 +19,9 @@
 <body class="text-gray-900">
   <!-- ---------- ENCABEZADO ---------- -->
   <header class="text-white p-4 shadow sticky top-0 z-20 flex items-center gap-4">
-    <img src="/mnt/data/c67df54b-5966-45e5-89b2-3447e2f2bc3f.jpg" alt="Logo ISSSTE" class="h-16" />
+    <img src="Logo.jpg" alt="Logo ISSSTE" class="h-16" />
     <div>
-      <h1 class="text-2xl font-semibold">Checklist Inteligente – Área de Tocología</h1>
+      <h1 class="text-2xl font-semibold">Checklist – Área de Tocología</h1>
       <p class="text-sm">Marque los ítems <strong>No conformes</strong>. El sistema clasifica automáticamente el tipo de mantenimiento.</p>
     </div>
   </header>
@@ -48,7 +48,7 @@
     <p><a href="checklist_tocologia.pdf" download class="text-blue-800 underline text-sm">Descargar formulario vacío (PDF)</a></p>
   </section>
 
-  <footer class="text-center text-xs text-gray-600 mt-10 pb-4">Hospital Público ISSSTE – Subdirección de Ingeniería Biomédica</footer>
+  <footer class="text-center text-xs text-gray-600 mt-10 pb-4"> ISSSTE – Hospital Regional Dr. Valentín Gómez Farías – Departamento de Ingeniería Biomédica</footer>
 
   <!-- ---------- SCRIPT PRINCIPAL ---------- -->
   <script>
@@ -108,7 +108,7 @@
       const resp=document.getElementById('responsable').value||'Sin nombre';
       const turno=document.getElementById('turno').value;
       const obs=document.getElementById('observaciones').value||'Sin observaciones';
-      let y=15;doc.setFontSize(14);doc.text('Reporte Checklist Tocología',105,y,{align:'center'});y+=10;
+      let y=15;doc.setFontSize(14);doc.text('Reporte Tocología',105,y,{align:'center'});y+=10;
       doc.setFontSize(10);
       doc.text(`Responsable: ${resp}`,14,y);
       doc.text(`Fecha: ${(new Date()).toLocaleDateString()}`,150,y);
