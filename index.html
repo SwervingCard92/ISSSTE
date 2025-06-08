@@ -59,24 +59,39 @@
     const clasificar = (s,c) => c||s>=THRESHOLDS.CORRECTIVO_SCORE? 'INMEDIATA': s>=3? 'PRONTA': s>=1? 'PROGRAMADA':'SIN_URGENCIA';
 
     /* -------------------- Datos ---------------------------- */
-    const EQUIPOS = [
-      ['A  Máquina de anestesia + ventilador', [['* Fuente O₂ (50 psi) y cilindro de respaldo',5],['* Prueba de fugas <= 300 mL/10 s',5],['* Ventilador cicla y alarmas presión/apnea',5],['Vaporizador con agente >= 1/4 tanque',1],['Absorbedor CO₂ fresco',1]]],
-      ['B  Desfibrilador bifásico', [['* Autotest diario OK (luz verde)',5],['* Carga 30 J < 5 s y descarga',5],['Batería >= 80 %',1],['Palas/parches en fecha',1]]],
-      ['C  Monitor multiparámetro', [['* ECG y SpO₂ funcionales; alarmas suenan',5],['Batería >= 30 min',1],['PNI infla/defla sin fugas',1]]],
-      ['D  Cuna térmica', [['* Modo servo mantiene 36-37 °C ± 0.2',5],['* Alarmas de sobretemperatura y sonda activas',5],['Sensor de piel íntegro',1]]],
-      ['E  Incubadora neonatal', [['* Control temperatura de aire ± 0.3 °C',5],['* Alarmas alta/baja temperatura',5],['Humidificador operativo',1]]],
-      ['F  Aspirador de succión', [['* Vacío >= -550 mmHg estable',5],['Frasco y tapa herméticos',1],['Filtro bacteriano seco',1]]],
-      ['G  Mesa quirúrgica', [['* Movimientos y frenos 100 % operativos',5],['Cable/tierra seguros',1],['Colchón sin rasgaduras',1]]],
-      ['H  Lámparas de cirugía', [['* Todas las fuentes de luz activas',5],['Brazos sostienen posición',1],['Mango estéril firme',1]]],
-      ['I  Torre de gases/eléctrica', [['* Salida O₂ 50 psi y vacío -550 mmHg',5],['* Tomas eléctricas con puesta a tierra',5],['Acoples sin fuga audible',1]]],
-      ['J  Pulsioxímetro portátil', [['* Lectura SpO₂ estable >= 95 %',5],['Batería >= 50 %',1]]],
-      ['K  Ultrasonido Doppler fetal', [['* Señal audible clara en prueba',5],['Batería/pilas en buen nivel',1]]],
-      ['L  Esfigmomanómetro + estetoscopio', [['* Manómetro en cero; sin fugas',5],['Estetoscopio acústica nítida',1]]],
-      ['M  Carro-camilla', [['* Barandales y frenos firmes',5],['Ruedas libres de obstrucción',1]]],
-      ['N  Negatoscopio', [['Iluminación continua homogénea',1],['Interruptor funcional',1]]],
-      ['O  Balanza para recién nacido', [['Calibración ± 10 g con peso patrón',1]]],
-      ['P  Tablero de aislamiento (LIM)', [['* Test LIM → alarma',5],['Fuga en reposo < 2 mA',1]]]
-    ];
+   const EQUIPOS = [
+  ['Desfibrilador ZOLL R Series', [
+    ['Indicador Code-Ready verde (sin ‘X’)', 5],
+    ['Unidad limpia; carcasa sin líquidos', 3],
+    ['Cables/palas sin cortes ni corrosión', 4],
+    ['Parches OneStep conectados / vigentes', 5],
+    ['Batería principal ≥ 90 %', 5],
+    ['Batería de respaldo 100 %', 4],
+    ['Autoprueba diaria superada', 5],
+    ['Descarga 30 J < 5 s OK', 5],
+    ['Marcapasos captura y alarma', 4],
+    ['Impresora imprime 1 mV nítido', 2],
+    ['Papel térmico suficiente', 1],
+    ['Cabezal impresora limpio', 1],
+    ['Accesorios (gel, electrodos) listos', 3],
+    ['Fecha/hora correctas', 1]
+  ]],
+  ['Máquina de anestesia + ventilador', [['Fuente O₂ (50 psi) y cilindro de respaldo',5],['Prueba de fugas <= 300 mL/10 s',5],['Ventilador cicla y alarmas presión/apnea',5],['Vaporizador con agente >= 1/4 tanque',1],['Absorbedor CO₂ fresco',1]]],
+  ['Monitor multiparámetro', [['ECG y SpO₂ funcionales; alarmas suenan',5],['Batería >= 30 min',1],['PNI infla/defla sin fugas',1]]],
+  ['Cuna térmica', [['Modo servo mantiene 36-37 °C ± 0.2',5],['Alarmas de sobretemperatura y sonda activas',5],['Sensor de piel íntegro',1]]],
+  ['Incubadora neonatal', [['Control temperatura de aire ± 0.3 °C',5],['Alarmas alta/baja temperatura',5],['Humidificador operativo',1]]],
+  ['Aspirador de succión', [['Frasco libre de fluidos residuales',4],['Frasco y tapa herméticos',1],['Filtro bacteriano seco',1]]],
+  ['Mesa quirúrgica', [['Movimientos y frenos 100 % operativos',5],['Cable/tierra seguros',1],['Colchón sin rasgaduras',1]]],
+  ['Lámparas de cirugía', [['Todas las fuentes de luz activas',5],['Brazos sostienen posición',1],['Mango estéril firme',1]]],
+  ['Torre de gases/eléctrica', [['Salida O₂ 50 psi y vacío -550 mmHg',5],['Tomas eléctricas con puesta a tierra',5],['Acoples sin fuga audible',1]]],
+  ['Pulsioxímetro portátil', [['Lectura SpO₂ estable >= 95 %',5],['Batería >= 50 %',1]]],
+  ['Esfigmomanómetro + estetoscopio', [['Manómetro en cero; sin fugas',5],['Estetoscopio acústica nítida',1]]],
+  ['Carro-camilla', [['Barandales y frenos firmes',5],['Ruedas libres de obstrucción',1]]],
+  ['Negatoscopio', [['Iluminación continua homogénea',1],['Interruptor funcional',1]]],
+  ['Balanza para recién nacido', [['Calibración ± 10 g con peso patrón',1]]],
+  ['Tablero de aislamiento (LIM)', [['Test LIM → alarma',5],['Fuga en reposo < 2 mA',1]]]
+];
+
 
     /* -------------------- Construcción UI ------------------ */
     const app=document.getElementById('app');
